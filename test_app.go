@@ -30,6 +30,7 @@ func init() {
 	cluster := gocql.NewCluster("cassandra:9042")
 	cluster.Port = 9042
 	cluster.Keyspace = "projekt1"
+	cluster.ProtoVersion = 3
 	
 	Session, err = cluster.CreateSession()
 	if err != nil {
