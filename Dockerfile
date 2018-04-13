@@ -24,6 +24,8 @@ RUN go get github.com/gocql/gocql
 
 WORKDIR $GOPATH/src/github.com/tomazbracic/test_app
 
+RUN cp *.html $GOPATH/bin
+
 RUN go install test_app.go
 
 WORKDIR $GOPATH/bin
