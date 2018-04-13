@@ -29,32 +29,12 @@ func init() {
 	
 	cluster := gocql.NewCluster("cassandra:9042")
 	cluster.Port = 9042
-	cluster.Keyspace = "system"
+	cluster.Keyspace = "projekt1"
 	
 	Session, err = cluster.CreateSession()
 	if err != nil {
 		panic(err)
 	}
-
-	
-
-	err = Session.Query(`CREATE KEYSPACE IF NOT EXISTS projekt1
-		WITH replication = {
-			'class' : 'SimpleStrategy',
-			'replication_factor' : 1
-		}`).Exec()
-	
-	if err != nil {
-		panic(err)
-	}
-
-	err = Session.Query(`CREATE TABLE IF NOT EXISTS test ( id uuid PRIMARY KEY, cas timestamp )`).Exec()
-
-	if err != nil {
-		panic(err)
-	}
-
-	Session.Close()
 	
 	fmt.Println("cassandra init done")
 }
@@ -114,47 +94,10 @@ func mainPage(w http.ResponseWriter, r *http.Request) {
 }
 
 
-// func createKeyspaceTable(cluster *ClusterConfig) {
-// 	c := *cluster
-// 	c.Keyspace = "system"
-// 	c.Timeout = 20 * time.Second
-// 	session, err := c.CreateSession()
-// 	if err != nil {
-// 		panic(err)
-// 	}
-
-// 	err = session.control.query(`CREATE KEYSPACE IF NOT EXISTS projekt1
-// 		WITH replication = {
-// 			'class' : 'SimpleStrategy',
-// 			'replication_factor' : 1
-// 		}`).Close()
-	
-// 	if err != nil {
-// 		panic(err)
-// 	}
-
-// 	err = session.control.query(`CREATE TABLE IF NOT EXISTS test ( id uuid PRIMARY KEY, cas timestamp )`).Close()
-
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// }
-
-
 func main() {
 	var err error
-	
-	cluster := gocql.NewCluster("cassandra:9042")
-	cluster.Port = 9042
-	cluster.Keyspace = "projekt1"
-	
-	Session, err = cluster.CreateSession()
-	if err != nil {
-		panic(err)
-	}
 
 	defer Session.Close()
-	
 	
 	
 	if err != nil {
