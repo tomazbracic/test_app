@@ -24,13 +24,12 @@ type ItemsPageData struct {
 var Session *gocql.Session
 var tmpl *template.Template
 
-
 func init() {
 	var err error
-
+	
 	cluster := gocql.NewCluster("cassandra:9042")
 	cluster.Port = 9042
-	cluster.Keyspace = "projekt1"
+	cluster.Keyspace = "system"
 	
 	Session, err = cluster.CreateSession()
 	if err != nil {
@@ -39,6 +38,24 @@ func init() {
 
 	
 
+	err = Session.Query(`CREATE KEYSPACE IF NOT EXISTS projekt1
+		WITH replication = {
+			'class' : 'SimpleStrategy',
+			'replication_factor' : 1
+		}`).Exec()
+	
+	if err != nil {
+		panic(err)
+	}
+
+	err = Session.Query(`CREATE TABLE IF NOT EXISTS test ( id uuid PRIMARY KEY, cas timestamp )`).Exec()
+
+	if err != nil {
+		panic(err)
+	}
+
+	Session.Close()
+	
 	fmt.Println("cassandra init done")
 }
 
@@ -48,7 +65,7 @@ func setTime(w http.ResponseWriter, r *http.Request) {
 	cajt := time.Now()
 
 	if err := Session.Query(`
-		INSERT INTO test (id, cas) VALUES (?, ?)`,
+		INSERT INTO projekt1.test (id, cas) VALUES (?, ?)`,
 		gocqlUuid, cajt).Exec(); err != nil {
 			errs = append(errs, err.Error())
 	} 
@@ -57,11 +74,10 @@ func setTime(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, cajt)
 }
 
-
 func getTime(w http.ResponseWriter, r *http.Request) {
 	var Items []Item
 	
-	query := "SELECT id, cas FROM test"
+	query := "SELECT id, cas FROM projekt1.test"
 	var tmpid string
 	var tmpcas time.Time 
 
@@ -97,9 +113,48 @@ func mainPage(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, nil)
 }
 
+
+// func createKeyspaceTable(cluster *ClusterConfig) {
+// 	c := *cluster
+// 	c.Keyspace = "system"
+// 	c.Timeout = 20 * time.Second
+// 	session, err := c.CreateSession()
+// 	if err != nil {
+// 		panic(err)
+// 	}
+
+// 	err = session.control.query(`CREATE KEYSPACE IF NOT EXISTS projekt1
+// 		WITH replication = {
+// 			'class' : 'SimpleStrategy',
+// 			'replication_factor' : 1
+// 		}`).Close()
+	
+// 	if err != nil {
+// 		panic(err)
+// 	}
+
+// 	err = session.control.query(`CREATE TABLE IF NOT EXISTS test ( id uuid PRIMARY KEY, cas timestamp )`).Close()
+
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// }
+
+
 func main() {
 	var err error
+	
+	cluster := gocql.NewCluster("cassandra:9042")
+	cluster.Port = 9042
+	cluster.Keyspace = "projekt1"
+	
+	Session, err = cluster.CreateSession()
+	if err != nil {
+		panic(err)
+	}
+
 	defer Session.Close()
+	
 	
 	
 	if err != nil {
