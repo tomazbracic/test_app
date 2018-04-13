@@ -1,0 +1,25 @@
+version: '2'
+
+services: 
+  test_app:
+    build: .
+    image: test_app:0.1.0
+    environment:
+    # - PORT=9999
+    # - CONSUL_HTTP_ADDR=192.168.88.188:8500
+
+    restart: always
+    # ports:
+    # - "9999:9999"
+    networks:
+    - testnet
+
+  cassandra:
+    image: cassandra:3.11
+    restart: always
+    networks:
+    - testnet
+
+networks:
+  testnet:
+    driver: bridge
