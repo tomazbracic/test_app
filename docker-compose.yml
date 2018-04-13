@@ -1,37 +1,6 @@
-version: '2'
+version: '3'
 
 services: 
-  test_app:
-    build: .
-    image: test_app:0.1.0
-    # environment:
-    # - PORT=9999
-    # - CONSUL_HTTP_ADDR=192.168.88.188:8500
-    restart: always
-    ports:
-      - "5555:5555"
-    links:
-      - cassandra
-    depends_on:
-      - "cassandra"
-    networks:
-      - testnet
-
-  proxy:
-    image: nginx:latest
-    ports: 
-      - "80:80" # host:container
-      - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      # connect host's ./nginx.conf with container's nginx.conf
-      # :ro == read only perms in container
-    depends_on:
-      - test_app
-    links:
-      - test_app:app # [other container]:[alias in this container]
-    networks:
-      - testnet
 
   cassandra:
     image: cassandra:3.11
@@ -42,12 +11,34 @@ services:
       - cassandra-data:/var/lib/cassandra
       - cassandra-data:/home/cassandra/.cassandra
       - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
-    networks:
-      - testnet
 
-networks:
-  testnet:
-    driver: bridge
+  test_app:
+    build: .
+    image: test_app:0.1.0
+    # environment:
+    # - PORT=9999
+    # - CONSUL_HTTP_ADDR=192.168.88.188:8500
+    restart: always
+    ports:
+      - "5555:5555"
+    # links:
+    #   - cassandra
+    # depends_on:
+    #   - "cassandra"
+
+  proxy:
+    image: nginx:latest
+    ports: 
+      - "80:80" # host:container
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      # connect host's ./nginx.conf with container's nginx.conf
+      # :ro == read only perms in container
+    # depends_on:
+    #   - test_app
+    # links:
+    #   - test_app
 
 volumes:
   cassandra-data: {}
