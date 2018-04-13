@@ -28,14 +28,16 @@ var tmpl *template.Template
 func init() {
 	var err error
 
-	cluster := gocql.NewCluster("192.168.88.188:9044")
-	cluster.Port = 9044
+	cluster := gocql.NewCluster("cassandra:9042")
+	cluster.Port = 9042
 	cluster.Keyspace = "projekt1"
 	
 	Session, err = cluster.CreateSession()
 	if err != nil {
 		panic(err)
 	}
+
+	
 
 	fmt.Println("cassandra init done")
 }

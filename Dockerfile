@@ -19,15 +19,13 @@ WORKDIR $GOPATH/src/github.com/tomazbracic/
 #
 
 
-RUN git clone https://cda4669c2c40bcb2659fcc6b3644e3c52f9ea841@github.com/driveulu/kafka_dispatcher.git
-RUN go get github.com/hashicorp/consul/api && \
-    go get github.com/confluentinc/confluent-kafka-go/kafka
+RUN git clone https://github.com/tomazbracic/test_app.git
+RUN go get github.com/gocql/gocql
 
-WORKDIR $GOPATH/src/github.com/driveulu/kafka_dispatcher
+WORKDIR $GOPATH/src/github.com/tomazbracic/test_app
 
-COPY send.go customer/send.go
-RUN go install main.go
+RUN go install test_app.go
 
 WORKDIR $GOPATH/bin
 
-CMD main
+CMD test_app

@@ -4,21 +4,36 @@ services:
   test_app:
     build: .
     image: test_app:0.1.0
-    environment:
+    # environment:
     # - PORT=9999
     # - CONSUL_HTTP_ADDR=192.168.88.188:8500
-
     restart: always
     # ports:
     # - "9999:9999"
+    links:
+      - cassandra
     networks:
-    - testnet
+      - testnet
+
+  proxy:
+    image: nginx:latest
+    ports: 
+      - "80:80" # host:container
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      # connect host's ./nginx.conf with container's nginx.conf
+      # :ro == read only perms in container
+    links:
+      - test_app:app # [other container]:[alias in this container]
 
   cassandra:
     image: cassandra:3.11
     restart: always
+    # ports:
+    #   - "9042:9042"
     networks:
-    - testnet
+      - testnet
 
 networks:
   testnet:
