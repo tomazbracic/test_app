@@ -2,41 +2,40 @@ package main
 
 import (
 	"fmt"
-	"net/http"
-	"log"
 	"html/template"
+	"log"
+	"net/http"
 	"time"
 
 	"github.com/gocql/gocql"
 )
 
 type Item struct {
-	ID string `json:"uuid"`
+	ID  string `json:"uuid"`
 	Cas string `json:"cas"`
 }
 
 type ItemsPageData struct {
 	PageTitle string
-	Items []Item
+	Items     []Item
 }
-
 
 var Session *gocql.Session
 var tmpl *template.Template
 
 func init() {
 	var err error
-	
+
 	cluster := gocql.NewCluster("cassandra:9042")
 	cluster.Port = 9042
 	cluster.Keyspace = "projekt1"
 	cluster.ProtoVersion = 3
-	
+
 	Session, err = cluster.CreateSession()
 	if err != nil {
 		panic(err)
 	}
-	
+
 	fmt.Println("cassandra init done")
 }
 
@@ -48,8 +47,8 @@ func setTime(w http.ResponseWriter, r *http.Request) {
 	if err := Session.Query(`
 		INSERT INTO projekt1.test (id, cas) VALUES (?, ?)`,
 		gocqlUuid, cajt).Exec(); err != nil {
-			errs = append(errs, err.Error())
-	} 
+		errs = append(errs, err.Error())
+	}
 
 	tmpl, _ = template.ParseFiles("set.html")
 	tmpl.Execute(w, cajt)
@@ -57,10 +56,10 @@ func setTime(w http.ResponseWriter, r *http.Request) {
 
 func getTime(w http.ResponseWriter, r *http.Request) {
 	var Items []Item
-	
+
 	query := "SELECT id, cas FROM projekt1.test"
 	var tmpid string
-	var tmpcas time.Time 
+	var tmpcas time.Time
 
 	iter := Session.Query(query).Iter()
 	for iter.Scan(&tmpid, &tmpcas) {
@@ -75,7 +74,7 @@ func getTime(w http.ResponseWriter, r *http.Request) {
 
 	data := ItemsPageData{
 		PageTitle: "Moj casovni seznam",
-		Items: Items,
+		Items:     Items,
 	}
 
 	fmt.Println(data)
@@ -86,7 +85,7 @@ func getTime(w http.ResponseWriter, r *http.Request) {
 
 func mainPage(w http.ResponseWriter, r *http.Request) {
 	var err error
-	
+
 	tmpl, err = template.ParseFiles("index.html")
 	if err != nil {
 		panic(err)
@@ -94,13 +93,11 @@ func mainPage(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, nil)
 }
 
-
 func main() {
 	var err error
 
 	defer Session.Close()
-	
-	
+
 	if err != nil {
 		panic(err)
 	}
@@ -112,8 +109,6 @@ func main() {
 	log.Fatal(http.ListenAndServe(":5555", nil))
 
 }
-
-
 
 // USE projekt1
 

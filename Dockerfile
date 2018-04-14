@@ -14,11 +14,6 @@ ENV GOBIN=$GOPATH/bin
 WORKDIR $GOPATH/src/github.com/tomazbracic/
 
 
-#
-# FIX BELOW
-#
-
-
 RUN git clone https://github.com/tomazbracic/test_app.git
 RUN go get github.com/gocql/gocql
 
